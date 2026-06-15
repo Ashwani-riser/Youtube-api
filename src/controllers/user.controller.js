@@ -1,5 +1,6 @@
 import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import { uploadOnCloudinary } from "../config/cloudinary.js";
 
 
 const registerUser = async (req, res) => {
@@ -99,9 +100,9 @@ const loginUser = async (req, res) => {
             });
         }
         const accessToken = user.generateAccessToken();
-        const refreshToken = user.generateRefreshToken();
+        const newRefreshToken = user.generateRefreshToken();
 
-         user.refreshToken = refreshToken;
+         user.refreshToken = newRefreshToken;
 
         await user.save({ validateBeforeSave: false });
 
@@ -109,13 +110,20 @@ const loginUser = async (req, res) => {
         "-password -refreshToken"
         );
 
-     return res.status(200).json({
-        success: true,
-        user: loggedInUser,
-        accessToken,
-        refreshToken,
-        message: "Login successful",
 
+       const options = {
+            httpOnly: true,//frontend js token nhi padh sakta
+            secure: true
+        };
+        return res
+            .status(200)
+            //server cookies set karega browser me, isliye httpOnly true karna chahiye taki client side scripts unhe access na kar sake
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json({
+                success: true,
+                user: loggedInUser,
+                message: "Login successful"
 });
 
     } catch (error) {
@@ -222,7 +230,183 @@ const refreshAccessToken = async (req, res) => {
     }
 };
 
+const updateUserAvatar = async (req, res) => {
+    try {
+        const avatarLocalPath = req.file?.path;
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+        if (!avatarLocalPath) {
+            return res.status(400).json({
+                success: false,
+                message: "Avatar file is required"
+            });
+        }
+
+        const avatar = await uploadOnCloudinary(
+            avatarLocalPath
+        );
+
+        if (!avatar) {
+            return res.status(500).json({
+                success: false,
+                message: "Error while uploading avatar"
+            });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set: {
+                    avatar: avatar.url
+                }
+            },
+            {
+                new: true
+            }
+        ).select("-password -refreshToken");
+
+        return res.status(200).json({
+            success: true,
+            data: user,
+            message: "Avatar updated successfully"
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+const updateUserCoverImage = async (req, res) => {
+    try {
+        const coverImageLocalPath = req.file?.path;
+
+        if (!coverImageLocalPath) {
+            return res.status(400).json({
+                success: false,
+                message: "Cover image file is required"
+            });
+        }
+
+        const coverImage = await uploadOnCloudinary(
+            coverImageLocalPath
+        );
+
+        if (!coverImage) {
+            return res.status(500).json({
+                success: false,
+                message: "Error while uploading cover image"
+            });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set: {
+                    coverImage: coverImage.url
+                }
+            },
+            {
+                new: true
+            }
+        ).select("-password -refreshToken");
+
+        return res.status(200).json({
+            success: true,
+            data: user,
+            message: "Cover image updated successfully"
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+const changeCurrentPassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Old password and new password are required"
+            });
+        }
+
+        const user = await User.findById(req.user._id);
+
+        const isPasswordCorrect =
+            await user.isPasswordCorrect(oldPassword);
+
+        if (!isPasswordCorrect) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid old password"
+            });
+        }
+
+        user.password = newPassword;
+
+        await user.save({
+            validateBeforeSave: false  //validation skip karne ke liye
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully"
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+const updateAccountDetails = async (req, res) => {
+    try {
+        const { fullName, email } = req.body;
+
+        if (!fullName || !email) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
+            });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set: {
+                    fullName,
+                    email
+                }
+            },
+            {
+                new: true
+            }
+        ).select("-password -refreshToken");
+
+        return res.status(200).json({
+            success: true,
+            data: user,
+            message: "Account details updated successfully"
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, updateUserAvatar, updateUserCoverImage, changeCurrentPassword, updateAccountDetails };
 
 
