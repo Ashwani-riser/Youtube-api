@@ -278,7 +278,7 @@ const updateUserAvatar = async (req, res) => {
     }
 }
 
-const updateUserCoverImage = async (req, res) => {
+const updateUserCoverImage = async (req, res)=>{
     try {
         const coverImageLocalPath = req.file?.path;
 
