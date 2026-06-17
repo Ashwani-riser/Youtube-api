@@ -1,5 +1,6 @@
 import { Video } from "../models/video.model.js";
 import { uploadOnCloudinary } from "../config/cloudinary.js";
+import { User } from "../models/user.model.js";
 
 const publishVideo = async (req, res) => {
     try {
@@ -97,6 +98,16 @@ const getVideoById = async (req, res) => {
             });
         }
 
+        await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $addToSet: {
+                    watchHistory: videoId,
+                },
+            }
+        );
+
+
         video.views += 1;
         await video.save();
 
@@ -159,6 +170,7 @@ const updateVideo = async (req, res) => {
                 message: "Video not found",
             });
         }
+
 
         if (video.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({

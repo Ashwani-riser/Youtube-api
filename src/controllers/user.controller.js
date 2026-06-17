@@ -405,8 +405,38 @@ const updateAccountDetails = async (req, res) => {
     }
 };
 
+const getWatchHistory = async (req, res) => {
+    try {
+
+        const user = await User.findById(
+            req.user._id
+        ).populate(
+            "watchHistory"
+        );
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: user.watchHistory,
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+
+    }
+};
 
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, updateUserAvatar, updateUserCoverImage, changeCurrentPassword, updateAccountDetails };
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, updateUserAvatar, updateUserCoverImage, changeCurrentPassword, updateAccountDetails ,getWatchHistory};
 
 

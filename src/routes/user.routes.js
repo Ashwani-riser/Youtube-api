@@ -7,7 +7,8 @@ import {
       updateUserAvatar,
       updateUserCoverImage,
       changeCurrentPassword,
-      updateAccountDetails
+      updateAccountDetails,
+       getWatchHistory,
  } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -51,6 +52,11 @@ router.patch(
     "/update-account",
     verifyJWT,
     updateAccountDetails
+);
+router.get(
+    "/history",
+    verifyJWT,
+    getWatchHistory
 );
 
 

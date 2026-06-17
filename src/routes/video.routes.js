@@ -28,7 +28,10 @@ router.route("/publish").post(
 
 router.route("/").get(getAllVideos);
 
-router.route("/:videoId").get(getVideoById);
+router.route("/:videoId").get(
+     verifyJWT,
+    getVideoById
+);
 
 router.route("/:videoId").patch(
     verifyJWT,
