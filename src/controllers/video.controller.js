@@ -236,6 +236,74 @@ const togglePublishStatus = async (req, res) => {
     }
 };
 
+const searchVideos = async (req, res) => {
+    try {
+
+        const { query } = req.query;
+
+        const videos = await Video.find({
+            $or: [
+                {
+                    title: {
+                        $regex: query,
+                        $options: "i",
+                    },
+                },
+                {
+                    description: {
+                        $regex: query,
+                        $options: "i",
+                    },
+                },
+            ],
+        }).populate(
+            "owner",
+            "username fullName avatar"
+        );
+
+        return res.status(200).json({
+            success: true,
+            data: videos,
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+
+    }
+};
+
+const getTrendingVideos = async (req, res) => {
+    try {
+
+        const videos = await Video.find({
+            isPublished: true,
+        })
+            .sort({ views: -1 }) //bas abhi views wise check kar rhe hain ki kaunsa video trending hai
+            .limit(10)
+            .populate(
+                "owner",
+                "username fullName avatar"
+            );
+
+        return res.status(200).json({
+            success: true,
+            data: videos,
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+
+    }
+};
+
 
 export {
     publishVideo,
@@ -244,4 +312,7 @@ export {
     updateVideo,
     deleteVideo,
     togglePublishStatus,
+    searchVideos,
+    getTrendingVideos,
+
 };

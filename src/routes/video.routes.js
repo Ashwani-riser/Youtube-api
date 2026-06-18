@@ -8,6 +8,8 @@ import {
     updateVideo,
     deleteVideo,
     togglePublishStatus,
+    searchVideos,
+    getTrendingVideos,
 } from "../controllers/video.controller.js";
 
 const router = Router();
@@ -29,10 +31,10 @@ router.route("/publish").post(
 
 router.route("/").get(getAllVideos);
 
-router.route("/:videoId").get(
-     verifyJWT,
-    getVideoById
-);
+// router.route("/:videoId").get(
+//      verifyJWT,
+//     getVideoById
+// );
 
 router.route("/:videoId").patch(
     verifyJWT,
@@ -48,5 +50,10 @@ router.patch(
     verifyJWT,
     togglePublishStatus
 );
-
+router.get("/search", searchVideos);
+router.get("/trending", getTrendingVideos);
+router.route("/:videoId").get(
+     verifyJWT,
+    getVideoById
+);
 export default router;
