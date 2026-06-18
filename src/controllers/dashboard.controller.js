@@ -34,6 +34,21 @@ const getChannelStats = async (req, res) => {
                     $in: videoIds,
                 },
             });
+        //Dashboard V2 feature
+        const mostViewedVideo = await Video.findOne({
+            owner: req.user._id,
+        })
+        .sort({ views: -1 })
+        .select("title views thumbnail");
+         
+        const latestUploads = await Video.find({
+            owner: req.user._id,
+        })
+        .sort({ createdAt: -1 })
+         .limit(5)
+        .select("title thumbnail views createdAt");
+
+
 
         return res.status(200).json({
             success: true,
@@ -42,6 +57,8 @@ const getChannelStats = async (req, res) => {
                 totalViews,
                 totalSubscribers,
                 totalLikes,
+                mostViewedVideo,
+                latestUploads,
             },
         });
 
