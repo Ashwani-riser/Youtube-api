@@ -24,6 +24,12 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
 app.use(cookieParser());
 
+app.get("/", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "YouTube Backend API is Live 🚀",
+    });
+});
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/videos", videoRouter);
