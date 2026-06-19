@@ -1,5 +1,3 @@
-## 🌐 Live API
-Base URL:https://youtube-api-ziy9.onrender.com
 
 # 🎥 YouTube Backend API
 
